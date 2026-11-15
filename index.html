@@ -32,7 +32,8 @@ button.mini{padding:4px 8px;font-size:.85rem;border-radius:8px;background:#fff;c
 .note{display:block;font-weight:400;font-size:.85rem;color:var(--soft)}
 .note.warn{color:var(--warn)}
 .acts{display:flex;gap:4px}
-.acts select{width:34px;padding:4px 2px;font-size:.85rem;border-radius:8px;color:var(--acc)}
+.editor{display:grid;gap:8px;padding:10px 12px;background:#fbfaf5;border-top:1px dashed var(--line)}
+.editor label{display:grid;gap:3px;font-size:.85rem;color:var(--soft)}
 ul.clean{list-style:none;padding:0;margin:0}
 .courses{columns:2;column-gap:20px}
 .courses h4{margin:10px 0 4px;font-size:.9rem;color:var(--acc);break-after:avoid}
@@ -71,7 +72,7 @@ details summary{cursor:pointer;font-weight:600}
     <input type="text" id="frigoIn" list="ingList" placeholder="ex : poulet, courgettes, reste de chorba…" style="flex:1;min-width:180px">
     <button class="ghost" id="frigoAdd">Ajouter</button>
   </div>
-  <datalist id="ingList"></datalist>
+  <datalist id="ingList"></datalist><datalist id="dishList"></datalist>
   <div class="chips" id="frigoChips"></div>
   <p class="sub" style="margin:8px 0 0">Ces aliments seront utilisés en priorité dès le début de la semaine.</p>
 </section>
@@ -132,6 +133,7 @@ details summary{cursor:pointer;font-weight:600}
         <label><input type="checkbox" id="nF"> Plaisir week-end</label>
         <label><input type="checkbox" id="nR"> Rapide / froid</label>
       </div>
+      <label><input type="checkbox" id="nAcc"> C'est une entrée / un accompagnement (jamais proposé seul)</label>
       <button class="ghost" id="nAdd">Ajouter ce plat</button>
     </div>
     <p class="sub" style="margin:12px 0 0"><button class="mini" id="resetHist">Effacer l'historique des semaines</button></p>
@@ -187,8 +189,6 @@ const BASE=[
 ["Tomates boulettes","tradi",2,"s",1,"viande hachée,sauce tomate,oignons,pain"],
 ["Seffa","tradi",2,"s",1,"vermicelles,poulet,raisins secs,amandes"],
 ["Chakhchoukha","tradi",2,"s",1,"galettes chakhchoukha,poulet,pois chiches,sauce tomate"],
-["Tajine tunisien","tradi",2,"s",1,"œufs,poulet,pommes de terre,fromage râpé"],
-["Pastilla","tradi",2,"s",1,"feuilles de brick,poulet,amandes,œufs"],
 ["Nouilles sautées","riz",2,"ms",1,"nouilles,poulet,légumes pour wok,sauce soja"],
 ["Chorba + brick + frites maison","soupe",0,"s",2,"viande pour chorba,vermicelles,sauce tomate,feuilles de brick,thon,pommes de terre"],
 ["Soupe de légumes + batbout au thon","soupe",0,"s",1,"légumes pour soupe,batbout,thon,fromage frais"],
@@ -207,14 +207,38 @@ const BASE=[
 ["Pizza","snack",1,"msf",1,"pâte à pizza,sauce tomate,mozzarella,garniture pizza"],
 ["Shawarma / tacos + frites","snack",0,"msf",2,"galettes tacos,poulet,sauce fromagère,frites"],
 ["Egg muffin","snack",0,"m",2,"muffins anglais,œufs,cheddar"],
-["Pastel","snack",0,"sf",1,"pâte à pastel,thon,oignons"],
 ["Bagel","snack",1,"mr",1,"bagels,fromage frais,saumon fumé"],
 ["Sandwich toasté","snack",0,"mr",1,"pain de mie,fromage,thon"],
 ["Pizza sandwich","snack",0,"mfr",1,"pâte à pizza,mozzarella,poulet"],
 ["Fricassé","snack",1,"r",1,"pains fricassé,thon,œufs,olives,pommes de terre"],
 ["Tacos / nachos + guacamole","snack",0,"sf",1,"tortillas,viande hachée,avocat,cheddar,tomates"],
 ["Poulet pané + pommes noisette","snack",2,"ms",1,"poulet,chapelure,œufs,pommes noisette"],
-["Falafel en wrap","snack",1,"sr",1,"falafels,wraps,salade,sauce"]
+["Falafel en wrap","snack",1,"sr",1,"falafels,wraps,salade,sauce"],
+// Entrées et accompagnements : jamais proposés seuls, à ajouter à un plat
+["Pastilla","acc",0,"",1,"feuilles de brick,poulet,amandes,œufs"],
+["Pastel","acc",0,"",1,"pâte à pastel,thon,oignons"],
+["Tajine tunisien","acc",0,"",1,"œufs,poulet,pommes de terre,fromage râpé"],
+["Brick au thon","acc",0,"",1,"feuilles de brick,thon,œufs"],
+["Brick au poulet","acc",0,"",1,"feuilles de brick,poulet,fromage râpé"],
+["Batbout au thon","acc",0,"",1,"batbout,thon,fromage frais"],
+["Batbout farci","acc",0,"",1,"batbout,viande hachée,fromage râpé"],
+["Croissant salé","acc",0,"",1,"croissants,fromage,tranches pour croque"],
+["Maakouda","acc",0,"",1,"pommes de terre,œufs,persil"],
+["Falafels","acc",0,"",1,"falafels"],
+["Kesra","acc",0,"",1,"semoule"],
+["Kesra farcie","acc",0,"",1,"semoule,viande hachée,oignons"],
+["Msemen","acc",0,"",1,"msemen"],
+["Arancini","acc",0,"",1,"riz arborio,mozzarella,chapelure"],
+["Cheese naan","acc",0,"",1,"cheese naan"],
+["Nachos + guacamole","acc",0,"",1,"nachos,avocat,tomates"],
+["Buns farcis","acc",0,"",1,"farine,poulet,fromage râpé"],
+["Fromage pané","acc",0,"",1,"fromage pané"],
+["Feuilleté","acc",0,"",1,"pâte feuilletée,fromage"],
+["Frites","acc",0,"",1,"frites"],
+["Pommes noisette","acc",0,"",1,"pommes noisette"],
+["Œufs durs","acc",0,"",1,"œufs"],
+["Petits pois carottes","acc",0,"",1,"petits pois carottes"],
+["Haricots verts","acc",0,"",1,"haricots verts"]
 ];
 const BRUNCH={n:"Brunch : œufs durs, fromage, fruits, pancakes, pain, beurre",cat:"brunch",p:0,t:"",w:1,i:["œufs","fromage","fruits","pain","beurre","farine","lait"]};
 const GOUTERS=["Pancakes","Cookies","Tiramisu","Fondant au chocolat","Moelleux au chocolat","Gaufres","Chouquettes","Panna cotta","Crème brûlée","Brioche perdue","Brownie","Brookie","Beignets","Sfenj","Crêpes mille trous","Crêpes","Boules coco","Tarte au chocolat","Flan","Tarte fraise ou framboise"];
@@ -238,6 +262,9 @@ const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/œ/g,"oe").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
 const stem=s=>norm(s).split(" ").map(w=>w.length>3?w.replace(/(s|x)$/,""):w).join(" ");
 function dishes(){return BASE.concat(custom).map(a=>({n:a[0],cat:a[1],p:a[2],t:a[3],w:a[4],i:a[5].split(",").map(x=>x.trim()).filter(Boolean)})).filter(d=>!off.includes(d.n))}
+const mains=()=>dishes().filter(d=>d.cat!=="acc");
+const accs=()=>dishes().filter(d=>d.cat==="acc");
+const known=n=>n===BRUNCH.n||BASE.concat(custom).some(a=>a[0]===n);
 function byName(n){if(n===BRUNCH.n)return BRUNCH;return BASE.concat(custom).map(a=>({n:a[0],cat:a[1],p:a[2],t:a[3],w:a[4],i:a[5].split(",").map(x=>x.trim())})).find(d=>d.n===n)||{n,cat:"autre",p:0,t:"",w:1,i:[]}}
 
 // ---------- Frigo ----------
@@ -256,7 +283,7 @@ function histPenalty(n){let f=1;const pen=[0.15,0.45,0.75];for(let k=0;k<3;k++){
 function usedNames(skipD,skipS){const u=[];week.forEach((day,d)=>["midi","soir"].forEach(s=>{if(d===skipD&&s===skipS)return;if(day[s]&&day[s].n)u.push(day[s].n)}));return u}
 function freeTerms(skipD,skipS){const used=[];week.forEach((day,d)=>["midi","soir"].forEach(s=>{if(d===skipD&&s===skipS)return;if(day[s]&&day[s].fr)used.push(...day[s].fr)}));return frigo.filter(f=>!used.includes(f))}
 function pool(d,s){
-  const all=dishes();
+  const all=mains();
   if(s==="soir"){
     const quick=opts.piscine&&d===2, need=nextCant(d)?(quick?1:2):0;
     let c=all.filter(x=>x.t.includes(quick?"r":"s")&&x.p>=need);
@@ -290,7 +317,7 @@ function generate(){
     week[d].soir=pick(d,"soir");
   }
   const g=GOUTERS.slice().sort(()=>Math.random()-.5);gouters=[g[0],g[1],g[2]];
-  persist();renderAll();$("saveMsg").textContent="";
+  edit=null;persist();renderAll();$("saveMsg").textContent="";
 }
 function persist(){LS.set("menus_week",week);LS.set("menus_gouters",gouters)}
 
@@ -302,12 +329,12 @@ function panierText(d){
   else{const h=hist[hist.length-1];if(h&&h.sunday)src={n:h.sunday}}
   if(!src||!src.n)return{t:"🍱 Panier repas : dîner de dimanche soir",note:"préparé la veille"};
   const x=byName(src.n);
+  if(!known(src.n))return{t:"🍱 Panier : "+src.n,note:"reste du dîner de la veille"};
   if(x.p===2)return{t:"🍱 Panier : "+x.n,note:"reste du dîner de la veille, à réchauffer à la cantine"};
   if(x.p===1)return{t:"🍱 Panier froid : "+x.n,note:"préparé la veille"};
   return{t:"🍱 Panier repas à prévoir",note:"le dîner de la veille ne se transporte pas bien",warn:true};
 }
-function optionsHtml(cur){const all=dishes().slice().sort((a,b)=>a.n.localeCompare(b.n,"fr"));
-  return `<option value="">✎</option>`+all.map(x=>`<option value="${esc(x.n)}"${x.n===cur?" selected":""}>${esc(x.n)}${x.p===2?" 🍱":""}</option>`).join("")}
+let edit=null;
 function renderMenu(){
   if(!week){$("menuSec").classList.add("hide");return}
   let h="";
@@ -317,14 +344,21 @@ function renderMenu(){
       const v=day[s];let what="",notes="",acts=true;
       if(v.panier){const p=panierText(d);what=p.t;notes=`<span class="note${p.warn?" warn":""}">${p.note}</span>`;acts=false}
       else{
-        what=esc(v.n);
+        what=esc([v.n].concat(v.add||[]).join(" + "));
+        if(v.txt)notes+=`<span class="note">✎ ${esc(v.txt)}</span>`;
         if(v.fr&&v.fr.length)notes+=`<span class="note">🧊 utilise : ${esc(v.fr.join(", "))}</span>`;
-        if(s==="soir"&&nextCant(d)){const x=byName(v.n);
-          notes+=x.p>0?`<span class="note">→ en prévoir en plus pour le panier de ${JOURS[(d+1)%7].toLowerCase()}</span>`
+        if(s==="soir"&&nextCant(d)&&known(v.n)){const x=byName(v.n);
+          notes+=x.p>0?`<span class="note">→ en prévoir en plus pour le panier de ${JOURS[(d+1)%7].toLowerCase()}${(v.add||[]).length?" (le plat seulement)":""}</span>`
                       :`<span class="note warn">⚠ pas pratique pour le panier de ${JOURS[(d+1)%7].toLowerCase()}</span>`}
       }
       h+=`<div class="slot"><span class="when">${s}</span><span class="what">${what}${notes}</span>`+
-        (acts?`<span class="acts"><button class="mini" data-re="${d},${s}" title="Proposer autre chose">🔄</button><select data-ch="${d},${s}" title="Choisir un plat">${optionsHtml("")}</select></span>`:`<span></span>`)+`</div>`;
+        (acts?`<span class="acts"><button class="mini" data-re="${d},${s}" title="Proposer autre chose">🔄</button><button class="mini" data-ed="${d},${s}" title="Modifier à la main">✎</button></span>`:`<span></span>`)+`</div>`;
+      if(acts&&edit===d+","+s)h+=`<div class="editor noprint">
+        <label>Plat (choisis dans la liste ou écris ce que tu veux)<input type="text" id="edN" list="dishList" value="${esc(v.n)}"></label>
+        <label>Entrée / accompagnement<select id="edA"><option value="">Ajouter…</option>${accs().map(a=>`<option>${esc(a.n)}</option>`).join("")}</select></label>
+        <div class="chips" id="edChips">${(v.add||[]).map((a,k)=>`<span class="chip">${esc(a)} <b data-ra="${k}">×</b></span>`).join("")}</div>
+        <label>Note libre (ex : + salade, doubler la quantité…)<input type="text" id="edT" value="${esc(v.txt||"")}"></label>
+        <div class="row"><button id="edOk">OK</button><button class="ghost" id="edCancel">Annuler</button></div></div>`;
     });
     h+="</div>";
   });
@@ -339,7 +373,7 @@ function renderGouters(){
 function rayonOf(ing){const s=norm(ing);for(const[r,keys]of RAYONS){if(keys.some(k=>s.includes(norm(k))))return r}return"Épicerie"}
 function coursesData(){
   const count={};
-  week.forEach(day=>["midi","soir"].forEach(s=>{const v=day[s];if(!v||!v.n)return;if((v.fr||[]).some(f=>/^reste /.test(stem(f))))return;byName(v.n).i.forEach(g=>{count[g]=(count[g]||0)+1})}));
+  week.forEach(day=>["midi","soir"].forEach(s=>{const v=day[s];if(!v||!v.n)return;if((v.fr||[]).some(f=>/^reste /.test(stem(f))))return;byName(v.n).i.concat((v.add||[]).flatMap(a=>byName(a).i)).forEach(g=>{count[g]=(count[g]||0)+1})}));
   const have=frigo.map(stem).filter(s=>s.length>=3&&!/^reste /.test(s));
   const groups={};
   Object.keys(count).forEach(g=>{const sg=stem(g);if(have.some(h=>sg.includes(h)||h.includes(sg)))return;
@@ -357,6 +391,7 @@ function renderPlats(){
   const all=BASE.concat(custom).map(a=>a[0]).sort((a,b)=>a.localeCompare(b,"fr"));
   $("plats").innerHTML=all.map(n=>`<label><input type="checkbox" data-pl="${esc(n)}"${off.includes(n)?"":" checked"}> ${esc(n)}</label>`).join("");
   const ings=[...new Set(BASE.concat(custom).flatMap(a=>a[5].split(",").map(x=>x.trim())))].sort((a,b)=>a.localeCompare(b,"fr"));
+  $("dishList").innerHTML=mains().sort((a,b)=>a.n.localeCompare(b.n,"fr")).map(x=>`<option value="${esc(x.n)}">`).join("");
   $("ingList").innerHTML=ings.map(i=>`<option value="${esc(i)}">`).join("");
 }
 function renderOpts(){
@@ -378,9 +413,20 @@ $("brunch").onchange=e=>{opts.brunch=e.target.checked;saveOpts()};
 $("cantDays").onchange=e=>{const d=e.target.dataset.c;if(d!==undefined){opts.cant[+d]=e.target.checked?1:0;saveOpts()}};
 $("gen").onclick=()=>{if($("frigoIn").value.trim())addFrigo();generate();$("menuSec").scrollIntoView({behavior:"smooth"})};
 $("menu").onclick=e=>{const b=e.target.closest("[data-re]");if(!b)return;const[d,s]=b.dataset.re.split(",");
-  const cur=week[+d][s].n;week[+d][s]=pick(+d,s,[cur]);persist();renderAll()};
-$("menu").onchange=e=>{const c=e.target.dataset.ch;if(!c||!e.target.value)return;const[d,s]=c.split(",");
-  const x=byName(e.target.value);week[+d][s]={n:x.n,fr:matchTerms(x,freeTerms(+d,s))};persist();renderAll()};
+  const cur=week[+d][s].n;edit=null;week[+d][s]=pick(+d,s,[cur]);persist();renderAll()};
+function edSlot(){const[d,s]=edit.split(",");return week[+d][s]}
+function edKeep(){const v=edSlot();v.n=$("edN").value.trim()||v.n;v.txt=$("edT").value.trim()}
+$("menu").addEventListener("click",e=>{
+  const b=e.target.closest("[data-ed]");
+  if(b){edit=edit===b.dataset.ed?null:b.dataset.ed;renderMenu();return}
+  if(e.target.dataset.ra!==undefined){edKeep();edSlot().add.splice(+e.target.dataset.ra,1);renderMenu();return}
+  if(e.target.id==="edCancel"){edit=null;renderAll();return}
+  if(e.target.id==="edOk"){const[d,s]=edit.split(","),v=edSlot(),old=v.n;edKeep();
+    if(v.n!==old)v.fr=known(v.n)?matchTerms(byName(v.n),freeTerms(+d,s)):[];
+    edit=null;persist();renderAll()}
+});
+$("menu").addEventListener("change",e=>{if(e.target.id!=="edA"||!e.target.value)return;edKeep();const v=edSlot();
+  v.add=v.add||[];if(!v.add.includes(e.target.value))v.add.push(e.target.value);renderMenu()});
 $("gouters").onclick=e=>{const k=e.target.dataset.g;if(k===undefined)return;const rest=GOUTERS.filter(g=>!gouters.includes(g));
   gouters[+k]=rest[Math.floor(Math.random()*rest.length)];persist();renderGouters()};
 $("courses").onchange=e=>{if(e.target.type==="checkbox")e.target.parentNode.classList.toggle("done",e.target.checked)};
@@ -393,11 +439,11 @@ $("save").onclick=()=>{
 $("print").onclick=()=>window.print();
 $("copy").onclick=()=>{const g=coursesData();let t="";Object.keys(g).forEach(r=>{t+=r.toUpperCase()+"\n"+g[r].map(o=>"- "+o.g).join("\n")+"\n\n"});
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$("copy").textContent="✅ Copié"},()=>{prompt("Copie la liste :",t)})};
-$("plats").onchange=e=>{const n=e.target.dataset.pl;if(!n)return;off=off.filter(x=>x!==n);if(!e.target.checked)off.push(n);LS.set("menus_off",off)};
+$("plats").onchange=e=>{const n=e.target.dataset.pl;if(!n)return;off=off.filter(x=>x!==n);if(!e.target.checked)off.push(n);LS.set("menus_off",off);renderPlats()};
 $("nAdd").onclick=()=>{
   const n=$("nName").value.trim();if(!n)return;
   const t=($("nM").checked?"m":"")+($("nS").checked?"s":"")+($("nF").checked?"f":"")+($("nR").checked?"r":"");
-  custom.push([n,"perso",+$("nP").value,t||"s",2,$("nIng").value]);LS.set("menus_custom",custom);
+  custom.push($("nAcc").checked?[n,"acc",0,"",1,$("nIng").value]:[n,"perso",+$("nP").value,t||"s",2,$("nIng").value]);LS.set("menus_custom",custom);
   $("nName").value="";$("nIng").value="";renderPlats();
 };
 $("resetHist").onclick=()=>{hist=[];LS.set("menus_hist",hist);$("resetHist").textContent="Historique effacé"};
